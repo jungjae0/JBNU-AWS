@@ -49,29 +49,50 @@ def week_temp_line(df):
     fig.update_layout(title_text=f'{df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
 
     return fig
-
 def day_temp_line(df, date):
     df = df[df['datetime'].dt.date == pd.to_datetime(date)]
-
-    max_temp = df['temp'].max()
-    min_temp = df['temp'].min()
-
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['temp'], name='temp')])
-    fig.update_layout(xaxis={"rangeslider": {"visible": True}, "type": "date",
-                             "range": [df["datetime"].min(), df["datetime"].max()]})
+    fig.update_layout(title_text='온도')
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='온도(℃)')
+    return fig
 
-    # fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == max_temp]['datetime'].values[0])],
-    #                          y=[max_temp],
-    #                          mode='markers',
-    #                          marker=dict(size=10, color='red'),
-    #                          name='최고기온'))
-    # fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == min_temp]['datetime'].values[0])],
-    #                          y=[min_temp],
-    #                          mode='markers',
-    #                          marker=dict(size=10, color='blue'),
-    #                          name='최저기온'))
+def day_humid_line(df, date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+    fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['hum'], name='hum')])
+    fig.update_layout(title_text='습도')
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='습도(%)')
 
     return fig
+
+def day_temphumid_line(df, date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+    fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
+    fig.add_trace(go.Scatter(x=df["datetime"], y=df['temp'], mode='lines', name='temp', line=dict(color='blue')))
+
+    fig.add_trace(go.Scatter(x=df["datetime"], y=df["hum"], name='hum', mode='lines', yaxis='y2', marker=dict(color='orange')))
+
+    fig.update_layout(yaxis=dict(title='온도(℃)'))
+    fig.update_layout(yaxis2=dict(title='습도(%)', overlaying='y', side='right', showgrid=False))
+    fig.update_xaxes(title_text='날짜')
+
+    fig.update_yaxes(range=[0, 100], tick0=0, dtick=10, secondary_y=True)
+
+
+    return fig
+
+def day_rad_line(df, date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+    df['cumsum_rad'] = df['rad'].cumsum()
+    fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['cumsum_rad'], name='hum')])
+    fig.update_layout(title_text='누적광량')
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='누적광량(W/m²)')
+
+    return fig
+
+
 def daily_temprain_linebar(df):
 
     fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
@@ -86,6 +107,16 @@ def daily_temprain_linebar(df):
 
     fig.update_layout(yaxis2=dict(title='강수량', overlaying='y', side='right', showgrid=False))
     fig.update_yaxes(range=[0, 100], tick0=0, dtick=10, secondary_y=True)
+
+    return fig
+
+def daily_tempdiff_line(df):
+
+    fig = go.Figure(data=[go.Scatter(x=df["날짜"], y=df['일교차'], name='일교차', mode='lines')])
+
+    fig.update_layout(title_text='일교차')
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='일교차(℃)')
 
     return fig
 
@@ -158,14 +189,16 @@ def main():
 
     col1, col2 = st.columns(2)
 
+    col1, col2 = st.columns(2)
+
     with col1:
-        start_date = st.date_input("Select a start date", min_value=min_date, max_value=max_date1, value=min_date, key=1)
+        start_date = st.date_input("Select a start date", min_value=min_date, max_value=max_date1, value=min_date,
+                                   key=1)
         start_date_str = start_date.strftime('%Y%m%d')
 
     with col2:
         end_date = st.date_input("Select an end date", min_value=min_date, max_value=max_date2, value=max_date2, key=2)
         end_date_str = end_date.strftime('%Y%m%d')
-
 
     minute_df, hour_df = aws2summary.get_dataframe(start_date_str, end_date_str, folder_path)
     daily_df, wd_category = aws2summary.daily_data(minute_df, hour_df)
@@ -175,17 +208,34 @@ def main():
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['한파일수'] = daily_df['한파일수'].apply(lambda x: '-' if x == 0 else x)
 
-
-    tab1, tab2, tab3, tab4 = st.tabs(['Vis', 'Summary', 'Hour Table', 'Minute Table'])
+    # 탭 생성 : 첫번째 탭의 이름은 Tab A 로, Tab B로 표시합니다.
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(['Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table'])
 
     with tab1:
+        select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
+                                    key=3)
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도"], key="chart_selection")
+
+        day_temphumid = day_temphumid_line(minute_df, select_date)
+        selected_chart = st.plotly_chart(day_temphumid)
+
+        if chart_selection == "온습도":
+            selected_chart.plotly_chart(day_temphumid)
+        elif chart_selection == "온도":
+            selected_chart.plotly_chart(day_temp_line(minute_df, select_date))
+        elif chart_selection == "습도":
+            selected_chart.plotly_chart(day_humid_line(minute_df, select_date))
+
+        day_rad = day_rad_line(minute_df, select_date)
+        st.plotly_chart(day_rad)
+
+    with tab2:
         week_temp = week_temp_line(minute_df)
         st.plotly_chart(week_temp)
 
-        # select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
-        #                             key=3)
-        # day_temp = day_temp_line(minute_df, select_date)
-        # st.plotly_chart(day_temp)
+        daily_tempdiff = daily_tempdiff_line(daily_df)
+        st.plotly_chart(daily_tempdiff)
 
         daily_temprain = daily_temprain_linebar(daily_df)
         st.plotly_chart(daily_temprain)
@@ -196,8 +246,7 @@ def main():
         wd_pie = wd_count_pie(wd_category)
         st.plotly_chart(wd_pie)
 
-    with tab2:
-
+    with tab3:
         st.write('요약 통계')
         st.write(daily_df)
 
@@ -209,11 +258,14 @@ def main():
         wd_category = wd_category.fillna(0)
         st.write(wd_category)
 
-    with tab3:
+    with tab4:
+
         show_hour_df = hour_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
         st.write(show_hour_df)
-    with tab4:
-        number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=1)
+
+    with tab5:
+
+        number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5)
 
         show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
         show_minute_df = show_minute_df[show_minute_df['datetime'].dt.minute % number == 0]
