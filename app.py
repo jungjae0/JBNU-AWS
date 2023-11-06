@@ -1,10 +1,10 @@
 import os
-
 import pytz
-import aws2summary
 import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
+
+import aws2summary
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -47,18 +47,24 @@ def week_temp_line(df):
                              name='최저기온'))
     fig.update_layout(title_text=f'{df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
 
+    fig.update_layout(title_text=f'온도 {df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='온도(℃)')
+
     return fig
 
 
 def week_humid_line(df):
-    # fig = px.line(df, x='datetime', y='humid', title='humiderature Over Time')
-    max_humid = df['hum'].max()
-    min_humid = df['hum'].min()
 
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['hum'], name='humid')])
     fig.update_layout(xaxis={"rangeslider": {"visible": True}, "type": "date",
                              "range": [df["datetime"].min(), df["datetime"].max()]})
     fig.update_layout(title_text=f'{df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
+
+    fig.update_layout(title_text=f'습도 {df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='습도(%)')
+
     return fig
 
 def week_temphumid_line(df):
@@ -69,7 +75,7 @@ def week_temphumid_line(df):
     fig.update_layout(yaxis2=dict(title='습도(%)', overlaying='y', side='right', showgrid=False))
     fig.update_xaxes(title_text='날짜')
     fig.update_yaxes(range=[0, 100], tick0=0, dtick=10, secondary_y=True)
-    fig.update_layout(title_text=f'{df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
+    fig.update_layout(title_text=f'온습도 {df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
     fig.update_layout(xaxis={"rangeslider": {"visible": True}, "type": "date",
                              "range": [df["datetime"].min(), df["datetime"].max()]})
 
@@ -90,7 +96,7 @@ def week_rad_line(df):
 def day_temp_line(df):
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['temp'], name='temp')])
     fig.update_layout(title_text='온도')
-    fig.update_xaxes(title_text='날짜')
+    fig.update_xaxes(title_text='시간')
     fig.update_yaxes(title_text='온도(℃)')
 
     return fig
@@ -98,7 +104,7 @@ def day_temp_line(df):
 def day_humid_line(df):
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['hum'], name='hum')])
     fig.update_layout(title_text='습도')
-    fig.update_xaxes(title_text='날짜')
+    fig.update_xaxes(title_text='시간')
     fig.update_yaxes(title_text='습도(%)')
 
     return fig
@@ -109,7 +115,7 @@ def day_temphumid_line(df):
     fig.add_trace(go.Scatter(x=df["datetime"], y=df["hum"], name='hum', mode='lines', yaxis='y2', marker=dict(color='orange')))
     fig.update_layout(yaxis=dict(title='온도(℃)'))
     fig.update_layout(yaxis2=dict(title='습도(%)', overlaying='y', side='right', showgrid=False))
-    fig.update_xaxes(title_text='날짜')
+    fig.update_xaxes(title_text='시간')
     fig.update_yaxes(range=[0, 100], tick0=0, dtick=10, secondary_y=True)
 
     return fig
@@ -118,7 +124,7 @@ def day_rad_line(df):
     df['cumsum_rad'] = df['rad'].cumsum()
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['cumsum_rad'], name='hum')])
     fig.update_layout(title_text='누적광량')
-    fig.update_xaxes(title_text='날짜')
+    fig.update_xaxes(title_text='시간')
     fig.update_yaxes(title_text='누적광량(W/m²)')
 
     return fig
@@ -133,10 +139,12 @@ def daily_temprain_linebar(df):
 
     fig.add_trace(go.Bar(x=df["날짜"], y=df["강수량"], name='강수량', yaxis='y2', marker=dict(color='blue')))
 
-    fig.update_layout(yaxis=dict(title='온도 (℃)'))
+    fig.update_layout(yaxis=dict(title='온도(℃)'))
 
-    fig.update_layout(yaxis2=dict(title='강수량', overlaying='y', side='right', showgrid=False))
+    fig.update_layout(yaxis2=dict(title='강수량(mm)', overlaying='y', side='right', showgrid=False))
     fig.update_yaxes(range=[0, 100], tick0=0, dtick=10, secondary_y=True)
+    fig.update_layout(title_text='온도-강수량')
+    fig.update_xaxes(title_text='날짜')
 
     return fig
 
@@ -161,33 +169,15 @@ def rain_count_pie(df):
 
 def text_to_degrees(text_direction):
     direction_mapping = {
-        "북": 0,
-        "북북동": 22.5,
-        "북동": 45,
-        "동북동": 67.5,
-        "동": 90,
-        "동남동": 112.5,
-        "남동": 135,
-        "남남동": 157.5,
-        "남": 180,
-        "남남서": 202.5,
-        "남서": 225,
-        "서남서": 247.5,
-        "서": 270,
-        "서북서": 292.5,
-        "북서": 315,
-        "북북서": 337.5
+        "북": 0, "북북동": 22.5, "북동": 45, "동북동": 67.5,
+        "동": 90, "동남동": 112.5, "남동": 135, "남남동": 157.5,
+        "남": 180, "남남서": 202.5, "남서": 225, "서남서": 247.5,
+        "서": 270, "서북서": 292.5, "북서": 315, "북북서": 337.5
     }
 
     return direction_mapping.get(text_direction, None)
 
 def wd_count_pie(df):
-    # grouped_data = df.groupby('풍향').size().reset_index(name='갯수')
-    # fig = px.pie(grouped_data, names='풍향', values='갯수', title='풍향계급별 분포',
-    #              hover_data=['풍향', '갯수'])
-    # fig.update_traces(textposition='inside', textinfo='percent+label')
-    #
-    # return fig
     df['풍향'] = df['풍향'].apply(lambda x: text_to_degrees(x))
     grouped_data = df.groupby('풍향').size().reset_index(name='갯수')
     fig = px.bar_polar(grouped_data, r='갯수', theta='풍향', title='풍향계급별 분포')
@@ -323,13 +313,58 @@ def ready_dataframe(folder_path):
 
     return minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df
 
+def explain_summary_data():
+
+    summary_data_table = """
+| 구분   | 단위    | 설명                                            |
+|------|-------|-----------------------------------------------|
+| 평균기온 | ℃     | 일 평균 기온                                       |
+| 최고기온 | ℃     | 일 최고 기온                                       |
+| 최저기온 | ℃     | 일 최저 기온                                       |
+| 강수량  | mm    | 일 총 강수량                                       |
+| 최대일사 | W/m^2 | 일 최대 일사량                                      |
+| 일교차  | ℃     | 일 최고 기온 - 일 최고 기온                             |
+| 강수계급 | -     | 강수량에 따라 5개 단계로 구분                             |
+| 풍향계급 | -     | 풍향에 따라 16개 방향으로 구분                            |
+| 적산온도 | ℃     | 생육일수의 일평균기온을 적산                               |
+| 강수일수 | 일     | -                                             |
+| 폭염일수 | 일     | -                                             |
+| 한파일수 | 일     | -                                             |
+| 체감온도 | ℃     | 인간이 느끼는 더위나 추위를 수량적으로 나타낸 것                   |
+| 실효습도 | %     | 수일 전부터의 상대습도에 경과 시간에 따른 가중치를 주어서 건조도를 나타내는 지수 |
+"""
+
+
+    with st.expander("AWS 요약 통계 데이터 명세서"):
+        st.markdown(summary_data_table)
+
+def explain_aws_data():
+    aws_data_table = """
+| 구분                | name     | 단위                  |
+|-------------------|----------|---------------------|
+| datetime          | datetime | YYYY-MM-DD hh:mm:ss |
+| 온도                | temp     | ℃                   |
+| 습도                | hum      | %                   |
+| 일사                | rad      | W/m^2               |
+| 풍향                | wd       | degree              |
+| 풍속                | ws       | m/s                  |
+| 강우                | rain     | mm                  |
+| 최대순간풍속(60초 중 최고값) | maxws    | m/s                 |
+| 배터리전압(최저값)        | bv       | V                   |
+    """
+
+    with st.expander("AWS 데이터 명세서"):
+        st.markdown(aws_data_table)
+
 
 def main():
     folder_path = "./output/AWS"
 
     minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df = ready_dataframe(folder_path)
 
+
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table', 'Day Table'])
+
 
     with tab1:
         tab_vis_day(select_minute_df)
@@ -339,15 +374,19 @@ def main():
 
     with tab3:
         tab_table_summary(daily_df, dates_df, wd_cate_df)
+        explain_summary_data()
 
     with tab4:
         tab_table_hour(hour_df)
+        explain_aws_data()
 
     with tab5:
         tab_table_minute(minute_df)
+        explain_aws_data()
 
     with tab6:
         tab_table_day(select_minute_df)
+        explain_aws_data()
 
 if __name__ == '__main__':
     main()
