@@ -40,25 +40,29 @@ def week_temp_line(df):
                              y=[max_temp],
                              mode='markers',
                              marker=dict(size=10, color='red'),
-                             name='최고기온'))
+                             name='최고온도'))
     fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == min_temp]['datetime'].values[0])],
                              y=[min_temp],
                              mode='markers',
                              marker=dict(size=10, color='blue'),
-                             name='최저기온'))
+                             name='최저온도'))
     fig.update_layout(title_text=f'{df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
 
+    fig.update_xaxes(title_text='날짜')
+    fig.update_yaxes(title_text='온도(℃)')
+
     return fig
-def day_temp_line(df, date):
-    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+
+def day_temp_line(df, select_date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(select_date)]
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['temp'], name='temp')])
     fig.update_layout(title_text='온도')
     fig.update_xaxes(title_text='날짜')
     fig.update_yaxes(title_text='온도(℃)')
     return fig
 
-def day_humid_line(df, date):
-    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+def day_humid_line(df, select_date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(select_date)]
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['hum'], name='hum')])
     fig.update_layout(title_text='습도')
     fig.update_xaxes(title_text='날짜')
@@ -66,8 +70,8 @@ def day_humid_line(df, date):
 
     return fig
 
-def day_temphumid_line(df, date):
-    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+def day_temphumid_line(df, select_date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(select_date)]
     fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Scatter(x=df["datetime"], y=df['temp'], mode='lines', name='temp', line=dict(color='blue')))
 
@@ -82,8 +86,8 @@ def day_temphumid_line(df, date):
 
     return fig
 
-def day_rad_line(df, date):
-    df = df[df['datetime'].dt.date == pd.to_datetime(date)]
+def day_rad_line(df, select_date):
+    df = df[df['datetime'].dt.date == pd.to_datetime(select_date)]
     df['cumsum_rad'] = df['rad'].cumsum()
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['cumsum_rad'], name='hum')])
     fig.update_layout(title_text='누적광량')
@@ -97,11 +101,11 @@ def daily_temprain_linebar(df):
 
     fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
 
-    fig.add_trace(go.Scatter(x=df["날짜"], y=df['평균기온'], mode='lines', name='평균기온', line=dict(color='green')))
-    fig.add_trace(go.Scatter(x=df["날짜"], y=df['최저기온'], mode='lines', name='최저기온', line=dict(color='blue')))
-    fig.add_trace(go.Scatter(x=df["날짜"], y=df['최고기온'], mode='lines', name='최고기온', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=df["날짜"], y=df['평균기온'], mode='lines', name='평균온도', line=dict(color='green')))
+    fig.add_trace(go.Scatter(x=df["날짜"], y=df['최저기온'], mode='lines', name='최저온도', line=dict(color='blue')))
+    fig.add_trace(go.Scatter(x=df["날짜"], y=df['최고기온'], mode='lines', name='최고온도', line=dict(color='red')))
 
-    fig.add_trace(go.Bar(x=df["날짜"], y=df["강수량"], name='강수량', yaxis='y2', marker=dict(color='blue')))
+    fig.add_trace(go.Bar(x=df["날짜"], y=df["강수량"], name='강수량(mm)', yaxis='y2', marker=dict(color='blue')))
 
     fig.update_layout(yaxis=dict(title='온도 (℃)'))
 
