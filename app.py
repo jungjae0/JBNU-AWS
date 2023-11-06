@@ -1,17 +1,15 @@
+import copy
 import os
+
 import pytz
+import aws2summary
 import pandas as pd
 import streamlit as st
-import urllib.request
 from datetime import datetime, timedelta
-from apscheduler.schedulers.background import BackgroundScheduler
-
 
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
-import aws2summary
 
 seoul = pytz.timezone('Asia/Seoul')
 
@@ -170,6 +168,7 @@ def wd_count_pie(df):
 
 def main():
     folder_path = "./output/AWS"
+
 
     min_date, max_date1, max_date2 = min_max_date(folder_path)
 
