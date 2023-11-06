@@ -97,12 +97,47 @@ def rain_count_pie(df):
 
     return fig
 
-def wd_count_pie(df):
-    grouped_data = df.groupby('풍향').size().reset_index(name='갯수')
-    fig = px.pie(grouped_data, names='풍향', values='갯수', title='풍향계급별 분포',
-                 hover_data=['풍향', '갯수'])
-    fig.update_traces(textposition='inside', textinfo='percent+label')
+def text_to_degrees(text_direction):
+    direction_mapping = {
+        "북": 0,
+        "북북동": 22.5,
+        "북동": 45,
+        "동북동": 67.5,
+        "동": 90,
+        "동남동": 112.5,
+        "남동": 135,
+        "남남동": 157.5,
+        "남": 180,
+        "남남서": 202.5,
+        "남서": 225,
+        "서남서": 247.5,
+        "서": 270,
+        "서북서": 292.5,
+        "북서": 315,
+        "북북서": 337.5
+    }
 
+    return direction_mapping.get(text_direction, None)
+
+def wd_count_pie(df):
+    # grouped_data = df.groupby('풍향').size().reset_index(name='갯수')
+    # fig = px.pie(grouped_data, names='풍향', values='갯수', title='풍향계급별 분포',
+    #              hover_data=['풍향', '갯수'])
+    # fig.update_traces(textposition='inside', textinfo='percent+label')
+    #
+    # return fig
+    df['풍향'] = df['풍향'].apply(lambda x: text_to_degrees(x))
+    grouped_data = df.groupby('풍향').size().reset_index(name='갯수')
+    fig = px.bar_polar(grouped_data, r='갯수', theta='풍향', title='풍향계급별 분포')
+    fig.update_traces(marker=dict(color='blue'))
+    fig.update_layout(
+        polar=dict(
+            angularaxis=dict(
+                direction='clockwise',
+                period=360
+            )
+        )
+    )
     return fig
 
 
