@@ -1,5 +1,4 @@
 import os
-import copy
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -76,7 +75,7 @@ def wd_cate(x):
 
 
 def daily_data(minute_df, hour_df):
-    hour_df, minute_df = copy.deepcopy(hour_df), copy.deepcopy(minute_df)
+    hour_df, minute_df = hour_df.copy(), minute_df.copy()
     # 1. 일별 통계
     summary = minute_df.groupby('date').agg(tavg=('temp', 'mean'),
                                             tmax=('temp', 'max'),

@@ -3,6 +3,5 @@ pytz
 requests
 datetime
 plotly
-pycopy-copy
 numpy
 streamlit
