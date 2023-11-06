@@ -60,16 +60,16 @@ def day_temp_line(df, date):
     fig.update_layout(xaxis={"rangeslider": {"visible": True}, "type": "date",
                              "range": [df["datetime"].min(), df["datetime"].max()]})
 
-    fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == max_temp]['datetime'].values[0])],
-                             y=[max_temp],
-                             mode='markers',
-                             marker=dict(size=10, color='red'),
-                             name='최고기온'))
-    fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == min_temp]['datetime'].values[0])],
-                             y=[min_temp],
-                             mode='markers',
-                             marker=dict(size=10, color='blue'),
-                             name='최저기온'))
+    # fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == max_temp]['datetime'].values[0])],
+    #                          y=[max_temp],
+    #                          mode='markers',
+    #                          marker=dict(size=10, color='red'),
+    #                          name='최고기온'))
+    # fig.add_trace(go.Scatter(x=[pd.to_datetime(df[df['temp'] == min_temp]['datetime'].values[0])],
+    #                          y=[min_temp],
+    #                          mode='markers',
+    #                          marker=dict(size=10, color='blue'),
+    #                          name='최저기온'))
 
     return fig
 def daily_temprain_linebar(df):
