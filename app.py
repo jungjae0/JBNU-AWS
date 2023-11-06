@@ -189,7 +189,7 @@ def main():
     daily_df, wd_category = aws2summary.daily_data(minute_df, hour_df)
     dates_df = aws2summary.weekly_date(daily_df)
 
-    select_minute_df = minute_df[minute_df['datetime'].dt.date == pd.to_datetime(select_date)]
+    select_minute_df = pd.read_csv(os.path.join(folder_path, f"{select_date.strftime('%Y%m%d')}.csv"))
 
 
     daily_df['폭염일수'] = daily_df['폭염일수'].apply(lambda x: '-' if x == 0 else x)
