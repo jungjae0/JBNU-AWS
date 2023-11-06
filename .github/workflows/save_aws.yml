@@ -2,7 +2,7 @@ name: Save AWS Data
 
 on:
   schedule:
-    - cron: '10 17 * * *'
+    - cron: '* 17 * * *'
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run Python Script
-      run: python actionaws.py
+      run: python awsaction.py
       env:
         MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 

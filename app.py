@@ -21,7 +21,7 @@ def min_max_date(folder_path):
     min_date = datetime(int(min_value[:4]), int(min_value[4:6]), int(min_value[6:]))
     max_date = datetime(int(max_value[:4]), int(max_value[4:6]), int(max_value[6:]))
 
-    max_date1 = max_date - timedelta(days=1)
+    max_date1 = max_date - timedelta(days=5)
     max_date2 = max_date
 
     return min_date, max_date1, max_date2
@@ -208,7 +208,7 @@ def user_select_date(folder_path):
     col1, col2 = st.columns(2)
 
     with col1:
-        start_date = st.date_input("Select a start date", min_value=min_date, max_value=max_date1, value=min_date, key=1)
+        start_date = st.date_input("Select a start date", min_value=min_date, max_value=max_date1, value=max_date1, key=1)
         start_date_str = start_date.strftime('%Y%m%d')
 
     with col2:
