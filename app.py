@@ -147,10 +147,10 @@ def main():
         week_temp = week_temp_line(minute_df)
         st.plotly_chart(week_temp)
 
-        # select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
-        #                             key=3)
-        # day_temp = day_temp_line(minute_df, select_date)
-        # st.plotly_chart(day_temp)
+        select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
+                                    key=3)
+        day_temp = day_temp_line(minute_df, select_date)
+        st.plotly_chart(day_temp)
 
         daily_temprain = daily_temprain_linebar(daily_df)
         st.plotly_chart(daily_temprain)
@@ -178,7 +178,10 @@ def main():
         show_hour_df = hour_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
         st.write(show_hour_df)
     with tab4:
+        number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=1)
+
         show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+        show_minute_df = show_minute_df[show_minute_df['datetime'].dt.minute % number == 0]
 
         st.write(show_minute_df)
 
