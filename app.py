@@ -1,4 +1,6 @@
 import copy
+import os
+
 import pytz
 import aws2summary
 import pandas as pd
@@ -11,6 +13,19 @@ from plotly.subplots import make_subplots
 
 seoul = pytz.timezone('Asia/Seoul')
 
+def min_max_date(folder_path):
+    csv_list = os.listdir(folder_path)
+    csv_list = [int(filename.split('.')[0]) for filename in csv_list]
+    max_value = str(max(csv_list))
+    min_value = str(min(csv_list))
+
+    min_date = datetime(int(min_value[:4]), int(min_value[4:6]), int(min_value[6:]))
+    max_date = datetime(int(max_value[:4]), int(max_value[4:6]), int(max_value[6:]))
+
+    max_date1 = max_date - timedelta(days=2)
+    max_date2 = max_date - timedelta(days=1)
+
+    return min_date, max_date1, max_date2
 
 def week_temp_line(df):
     # fig = px.line(df, x='datetime', y='temp', title='Temperature Over Time')
@@ -104,9 +119,7 @@ def show_df(minute_df, hour_df):
 def main():
     folder_path = "./output/AWS"
 
-    min_date = datetime(2023, 10, 24)
-    max_date1 = datetime.now(seoul) - timedelta(days=2)
-    max_date2 = datetime.now(seoul) - timedelta(days=1)
+    min_date, max_date1, max_date2 = min_max_date(folder_path)
 
     col1, col2 = st.columns(2)
 
@@ -128,25 +141,46 @@ def main():
     daily_df['한파일수'] = daily_df['한파일수'].apply(lambda x: '-' if x == 0 else x)
 
 
-    week_temp = week_temp_line(minute_df)
-    st.plotly_chart(week_temp)
+    tab1, tab2, tab3, tab4 = st.tabs(['Vis', 'Summary', 'Hour Table', 'Minute Table'])
 
-    select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date, key=3)
-    day_temp = day_temp_line(minute_df, select_date)
-    st.plotly_chart(day_temp)
+    with tab1:
+        week_temp = week_temp_line(minute_df)
+        st.plotly_chart(week_temp)
 
+        # select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
+        #                             key=3)
+        # day_temp = day_temp_line(minute_df, select_date)
+        # st.plotly_chart(day_temp)
 
-    daily_temprain = daily_temprain_linebar(daily_df)
-    st.plotly_chart(daily_temprain)
+        daily_temprain = daily_temprain_linebar(daily_df)
+        st.plotly_chart(daily_temprain)
 
-    rain_pie = rain_count_pie(daily_df)
-    st.plotly_chart(rain_pie)
+        rain_pie = rain_count_pie(daily_df)
+        st.plotly_chart(rain_pie)
 
-    wd_pie = wd_count_pie(wd_category)
-    st.plotly_chart(wd_pie)
+        wd_pie = wd_count_pie(wd_category)
+        st.plotly_chart(wd_pie)
 
+    with tab2:
 
-    st.write(dates_df)
+        st.write('요약 통계')
+        st.write(daily_df)
+
+        st.write(dates_df)
+
+        st.write('풍향 계급')
+        wd_category = wd_category.groupby(['date'])['풍향'].value_counts().reset_index(name='counts')
+        wd_category = wd_category.pivot(index='date', columns='풍향', values='counts')
+        wd_category = wd_category.fillna(0)
+        st.write(wd_category)
+
+    with tab3:
+        show_hour_df = hour_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+        st.write(show_hour_df)
+    with tab4:
+        show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+
+        st.write(show_minute_df)
 
 if __name__ == '__main__':
     main()
