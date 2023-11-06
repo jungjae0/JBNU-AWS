@@ -147,10 +147,10 @@ def main():
         week_temp = week_temp_line(minute_df)
         st.plotly_chart(week_temp)
 
-        select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
-                                    key=3)
-        day_temp = day_temp_line(minute_df, select_date)
-        st.plotly_chart(day_temp)
+        # select_date = st.date_input("Select an end date", min_value=start_date, max_value=end_date, value=end_date,
+        #                             key=3)
+        # day_temp = day_temp_line(minute_df, select_date)
+        # st.plotly_chart(day_temp)
 
         daily_temprain = daily_temprain_linebar(daily_df)
         st.plotly_chart(daily_temprain)
