@@ -238,24 +238,24 @@ def user_select_date(folder_path):
     return start_date, start_date_str, end_date, end_date_str, select_date, select_date_str
 
 def tab_vis_today(today_df):
-    day_temphumid = day_temphumid_line(today_df)
-    day_temp = day_temp_line(today_df)
-    day_humid = day_humid_line(today_df)
-    day_rad = day_rad_line(today_df)
+    today_temphumid = day_temphumid_line(today_df)
+    today_temp = day_temp_line(today_df)
+    today_humid = day_humid_line(today_df)
+    today_rad = day_rad_line(today_df)
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="today_chart_selection")
 
-    selected_chart = st.plotly_chart(day_temphumid)
+    selected_chart = st.plotly_chart(today_temphumid)
 
     if chart_selection == "온습도":
-        selected_chart.plotly_chart(day_temphumid)
+        selected_chart.plotly_chart(today_temphumid)
     elif chart_selection == "온도":
-        selected_chart.plotly_chart(day_temp)
+        selected_chart.plotly_chart(today_temp)
     elif chart_selection == "습도":
-        selected_chart.plotly_chart(day_humid)
+        selected_chart.plotly_chart(today_humid)
     elif chart_selection == "누적광량":
-        selected_chart.plotly_chart(day_rad)
+        selected_chart.plotly_chart(today_rad)
 
 def tab_vis_day(select_minute_df):
     day_temphumid = day_temphumid_line(select_minute_df)
@@ -326,6 +326,7 @@ def tab_table_summary(daily_df, dates_df, wd_category):
 def tab_table_hour(hour_df):
     show_hour_df = hour_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
     st.write(show_hour_df)
+
 
 def tab_table_minute(minute_df):
     number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key=4)
@@ -416,6 +417,8 @@ def main():
 
     with tab1:
         tab_vis_today(today_df)
+        with st.expander("오늘 데이터 확인"):
+            tab_table_minute(today_df)
 
     with tab2:
         tab_vis_day(select_minute_df)
