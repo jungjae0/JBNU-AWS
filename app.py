@@ -343,6 +343,12 @@ def tab_table_day(select_minute_df):
     st.write(show_select_minute_df)
 
 
+def tab_table_today(today_df):
+    number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key='today_minute_number')
+    show_today_df = today_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+    show_today_df = show_today_df[show_today_df['datetime'].dt.minute % number == 0]
+    st.write(show_today_df)
+
 def ready_dataframe(folder_path):
     today_df = get_today_aws()
 
@@ -418,7 +424,7 @@ def main():
     with tab1:
         tab_vis_today(today_df)
         with st.expander("오늘 데이터 확인"):
-            tab_table_minute(today_df)
+            tab_table_today(today_df)
 
     with tab2:
         tab_vis_day(select_minute_df)
