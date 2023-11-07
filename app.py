@@ -429,6 +429,9 @@ def main():
     folder_path = "./output/AWS"
 
     with st.sidebar:
+        st.write('※ Table에 마우스 커서 위치시킨 후 다운로드 버튼 누르면 csv 다운로드 가능')
+        st.write('※ Chart에 마우스 커서 위치시키면 상세한 값 확인 가능')
+
         choice = option_menu("Menu", ["Today", "Past"],
                              icons=['house', 'kanban'],
                              menu_icon="app-indicator", default_index=0,
