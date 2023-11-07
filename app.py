@@ -432,7 +432,17 @@ def main():
     minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df, today_df = ready_dataframe(folder_path)
 
     with st.sidebar:
-        choice = option_menu("Menu", ["Today", "Past"])
+        choice = option_menu("Menu", ["Today", "Past"],
+                             icons=['house', 'kanban'],
+                             menu_icon="app-indicator", default_index=0,
+                             styles={
+                                 "container": {"padding": "4!important", "background-color": "#fafafa"},
+                                 "icon": {"color": "black", "font-size": "25px"},
+                                 "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px",
+                                              "--hover-color": "#fafafa"},
+                                 "nav-link-selected": {"background-color": "#08c7b4"},
+                             }
+                             )
 
     if choice == 'Today':
         show_current_data(today_df)
