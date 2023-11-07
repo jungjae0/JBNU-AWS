@@ -2,6 +2,7 @@ import os
 import pytz
 import pandas as pd
 import streamlit as st
+from streamlit_option_menu import option_menu
 from datetime import datetime, timedelta
 import urllib.request
 
@@ -349,6 +350,19 @@ def tab_table_today(today_df):
     show_today_df = show_today_df[show_today_df['datetime'].dt.minute % number == 0]
     st.write(show_today_df)
 
+def show_current_data(today_df):
+    last_data = today_df.iloc[-1]
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric("온도", f"{last_data['temp']} ℃")
+    b2.metric("습도", f"{last_data['hum']} %")
+    b3.metric("일사량", f"{int(last_data['rad'])} W/m²")
+    b4.metric("강수량", f"{last_data['rain']} mm")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric("풍속", f"{last_data['wd']} m/s")
+    b2.metric("풍향", f"{last_data['wd']}°")
+    b3.metric("최대순간풍속(60초 중 최고값)", f"{last_data['maxws']} m/s")
+    b4.metric("배터리전압", f"{last_data['bv']} V")
+
 def ready_dataframe(folder_path):
     today_df = get_today_aws()
 
@@ -417,37 +431,38 @@ def main():
 
     minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df, today_df = ready_dataframe(folder_path)
 
+    with st.sidebar:
+        choice = option_menu("Menu", ["Today", "Past"])
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Today', 'Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table', 'Day Table'])
-
-
-    with tab1:
+    if choice == 'Today':
+        show_current_data(today_df)
         tab_vis_today(today_df)
-        with st.expander("오늘 데이터 확인"):
-            tab_table_today(today_df)
 
-    with tab2:
-        tab_vis_day(select_minute_df)
+    elif choice == 'Past':
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+            ['Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table', 'Day Table'])
 
-    with tab3:
-        tab_vis_daily(minute_df, daily_df, wd_cate_df)
+        with tab1:
+            tab_vis_day(select_minute_df)
 
-    with tab4:
-        tab_table_summary(daily_df, dates_df, wd_cate_df)
-        explain_summary_data()
+        with tab2:
+            tab_vis_daily(minute_df, daily_df, wd_cate_df)
 
-    with tab5:
-        tab_table_hour(hour_df)
-        explain_aws_data()
+        with tab3:
+            tab_table_summary(daily_df, dates_df, wd_cate_df)
+            explain_summary_data()
 
-    with tab6:
-        tab_table_minute(minute_df)
-        explain_aws_data()
+        with tab4:
+            tab_table_hour(hour_df)
+            explain_aws_data()
 
-    with tab7:
-        tab_table_day(select_minute_df)
+        with tab5:
+            tab_table_minute(minute_df)
+            explain_aws_data()
 
-        explain_aws_data()
+        with tab6:
+            tab_table_day(select_minute_df)
+            explain_aws_data()
 
 if __name__ == '__main__':
     main()
