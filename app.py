@@ -447,6 +447,8 @@ def main():
     if choice == 'Today':
         show_current_data(today_df)
         tab_vis_today(today_df)
+        with st.expander("오늘(현재) 데이터 확인"):
+            tab_table_today(today_df)
 
     elif choice == 'Past':
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
