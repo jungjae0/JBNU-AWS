@@ -364,7 +364,6 @@ def show_current_data(today_df):
     b4.metric("배터리전압", f"{last_data['bv']} V")
 
 def ready_dataframe(folder_path):
-    today_df = get_today_aws()
 
     start_date, start_date_str, end_date, end_date_str, select_date, select_date_str = user_select_date(folder_path)
 
@@ -380,7 +379,7 @@ def ready_dataframe(folder_path):
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['한파일수'] = daily_df['한파일수'].apply(lambda x: '-' if x == 0 else x)
 
-    return minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df, today_df
+    return minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df
 
 def explain_summary_data():
 
@@ -429,8 +428,6 @@ def explain_aws_data():
 def main():
     folder_path = "./output/AWS"
 
-    minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df, today_df = ready_dataframe(folder_path)
-
     with st.sidebar:
         choice = option_menu("Menu", ["Today", "Past"],
                              icons=['house', 'kanban'],
@@ -445,12 +442,15 @@ def main():
                              )
 
     if choice == 'Today':
+        today_df = get_today_aws()
         show_current_data(today_df)
         tab_vis_today(today_df)
         with st.expander("오늘(현재) 데이터 확인"):
             tab_table_today(today_df)
 
     elif choice == 'Past':
+        minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df = ready_dataframe(folder_path)
+
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
             ['Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table', 'Day Table'])
 
