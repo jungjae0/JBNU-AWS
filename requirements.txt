@@ -5,3 +5,4 @@ datetime
 plotly
 numpy
 streamlit
+urllib

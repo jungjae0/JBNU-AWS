@@ -3,6 +3,7 @@ import pytz
 import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
+import urllib.request
 
 import aws2summary
 
@@ -11,6 +12,31 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 seoul = pytz.timezone('Asia/Seoul')
+
+def get_today_aws():
+    date = datetime.now(seoul)
+    Year = date.year
+    Mon = f"{date.month:02d}"
+    Day = f"{date.day:02d}"
+    Site = 85
+    Dev = 1
+
+    aws_url =f'http://203.239.47.148:8080/dspnet.aspx?Site={Site}&Dev={Dev}&Year={Year}&Mon={Mon}&Day={Day}'
+    data = urllib.request.urlopen(aws_url)
+
+    df = pd.read_csv(data, header=None)
+
+    df.columns = ['datetime', 'temp', 'hum', 'X', 'X', 'X', 'rad', 'wd', 'X', 'X', 'X', 'X', 'X', 'ws', 'rain', 'maxws', 'bv', 'X']
+    drop_cols = [col for col in df.columns if 'X' in col]
+    df = df.drop(columns=drop_cols)
+
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['date'] = pd.to_datetime(df['datetime'].dt.date)
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
+    df['day'] = df['date'].dt.day
+
+    return df
 
 def min_max_date(folder_path):
     csv_list = os.listdir(folder_path)
@@ -211,6 +237,26 @@ def user_select_date(folder_path):
 
     return start_date, start_date_str, end_date, end_date_str, select_date, select_date_str
 
+def tab_vis_today(today_df):
+    day_temphumid = day_temphumid_line(today_df)
+    day_temp = day_temp_line(today_df)
+    day_humid = day_humid_line(today_df)
+    day_rad = day_rad_line(today_df)
+
+    st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="today_chart_selection")
+
+    selected_chart = st.plotly_chart(day_temphumid)
+
+    if chart_selection == "온습도":
+        selected_chart.plotly_chart(day_temphumid)
+    elif chart_selection == "온도":
+        selected_chart.plotly_chart(day_temp)
+    elif chart_selection == "습도":
+        selected_chart.plotly_chart(day_humid)
+    elif chart_selection == "누적광량":
+        selected_chart.plotly_chart(day_rad)
+
 def tab_vis_day(select_minute_df):
     day_temphumid = day_temphumid_line(select_minute_df)
     day_temp = day_temp_line(select_minute_df)
@@ -297,6 +343,8 @@ def tab_table_day(select_minute_df):
 
 
 def ready_dataframe(folder_path):
+    today_df = get_today_aws()
+
     start_date, start_date_str, end_date, end_date_str, select_date, select_date_str = user_select_date(folder_path)
 
     minute_df, hour_df = aws2summary.get_dataframe(start_date_str, end_date_str, folder_path)
@@ -311,7 +359,7 @@ def ready_dataframe(folder_path):
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['한파일수'] = daily_df['한파일수'].apply(lambda x: '-' if x == 0 else x)
 
-    return minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df
+    return minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df, today_df
 
 def explain_summary_data():
 
@@ -360,32 +408,36 @@ def explain_aws_data():
 def main():
     folder_path = "./output/AWS"
 
-    minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df = ready_dataframe(folder_path)
+    minute_df, hour_df, daily_df, wd_cate_df, dates_df, select_minute_df, today_df = ready_dataframe(folder_path)
 
 
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table', 'Day Table'])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Today', 'Day Vis', 'Daily Vis', 'Summary Table', 'Hour Table', 'Minute Table', 'Day Table'])
 
 
     with tab1:
-        tab_vis_day(select_minute_df)
+        tab_vis_today(today_df)
 
     with tab2:
-        tab_vis_daily(minute_df, daily_df, wd_cate_df)
+        tab_vis_day(select_minute_df)
 
     with tab3:
+        tab_vis_daily(minute_df, daily_df, wd_cate_df)
+
+    with tab4:
         tab_table_summary(daily_df, dates_df, wd_cate_df)
         explain_summary_data()
 
-    with tab4:
+    with tab5:
         tab_table_hour(hour_df)
         explain_aws_data()
 
-    with tab5:
+    with tab6:
         tab_table_minute(minute_df)
         explain_aws_data()
 
-    with tab6:
+    with tab7:
         tab_table_day(select_minute_df)
+
         explain_aws_data()
 
 if __name__ == '__main__':
