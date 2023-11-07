@@ -113,7 +113,7 @@ def week_rad_line(df):
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['cumsum_rad'], name='hum')])
     fig.update_layout(xaxis={"rangeslider": {"visible": True}, "type": "date",
                              "range": [df["datetime"].min(), df["datetime"].max()]})
-    fig.update_layout(title_text='누적광량')
+    fig.update_layout(title_text=f'누적광량 {df["datetime"].min().date()} ~ {df["datetime"].max().date()}')
     fig.update_xaxes(title_text='날짜')
     fig.update_yaxes(title_text='누적광량(W/m²)')
 
@@ -351,6 +351,13 @@ def tab_table_today(today_df):
     st.write(show_today_df)
 
 def show_current_data(today_df):
+    def wd_cate(x):
+        directions = ["북", "북북동", "북동", "동북동", "동", "동남동", "남동", "남남동", "남", "남남서", "남서", "서남서", "서", "서북서", "북서",
+                      "북북서"]
+        index = int((x + 11.25) / 22.5) % 16
+        return directions[index]
+
+
     last_data = today_df.iloc[-1]
     b1, b2, b3, b4 = st.columns(4)
     b1.metric("온도", f"{last_data['temp']} ℃")
@@ -358,8 +365,8 @@ def show_current_data(today_df):
     b3.metric("일사량", f"{int(last_data['rad'])} W/m²")
     b4.metric("강수량", f"{last_data['rain']} mm")
     b1, b2, b3, b4 = st.columns(4)
-    b1.metric("풍속", f"{last_data['wd']} m/s")
-    b2.metric("풍향", f"{last_data['wd']}°")
+    b1.metric("풍속", f"{last_data['ws']} m/s")
+    b2.metric("풍향", f"{wd_cate(last_data['wd'])}")
     b3.metric("최대순간풍속(60초 중 최고값)", f"{last_data['maxws']} m/s")
     b4.metric("배터리전압", f"{last_data['bv']} V")
 
