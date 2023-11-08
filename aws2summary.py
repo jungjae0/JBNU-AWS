@@ -115,7 +115,7 @@ def daily_data(minute_df, hour_df):
                 to_hotcold['Tw'] ** 2) + 0.00278 * to_hotcold['Tw'] * to_hotcold['temp'] + 3.0
     to_hotcold['cold'] = 13.12 + 0.6214 * to_hotcold['temp'] - 11.37 * to_hotcold['ws'] ** 0.16 + 0.3965 * to_hotcold[
         'ws'] ** 0.16 * to_hotcold['temp']
-    to_hotcold['cold'] = to_hotcold.apply(lambda row: row['cold'] if row['temp'] < 11 and row['ws'] > 1.2 else '-',
+    to_hotcold['cold'] = to_hotcold.apply(lambda row: row['cold'] if row['temp'] < 11 and row['ws'] > 1.2 else 0,
                                           axis=1)
     hot_cold = to_hotcold.groupby('date').agg(hot=('hot', 'max'), cold=('cold', 'min'), ).reset_index()
     hot_cold['month'] = pd.to_datetime(hot_cold['date']).dt.month

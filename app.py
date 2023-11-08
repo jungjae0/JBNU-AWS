@@ -434,6 +434,8 @@ def explain_aws_data():
 
 def main():
     folder_path = "./output/AWS"
+    folder_path = "C:\code\Action-AWS\output\AWS"
+
 
     with st.sidebar:
         st.write('※ Table에 마우스 커서 위치시킨 후 다운로드 버튼 누르면 csv 다운로드 가능')
