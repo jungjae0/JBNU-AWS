@@ -434,7 +434,7 @@ def explain_aws_data():
 
 def main():
     folder_path = "./output/AWS"
-    folder_path = "C:\code\Action-AWS\output\AWS"
+    # folder_path = "C:\code\Action-AWS\output\AWS"
 
 
     with st.sidebar:
