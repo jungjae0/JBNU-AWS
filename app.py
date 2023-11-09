@@ -1,6 +1,7 @@
 import os
 import pytz
 import pandas as pd
+import numpy as np
 import streamlit as st
 from streamlit_option_menu import option_menu
 from datetime import datetime, timedelta
@@ -404,6 +405,9 @@ def ready_dataframe(folder_path):
     select_minute_df['datetime'] = pd.to_datetime(select_minute_df['datetime'])
     select_minute_df['date'] = pd.to_datetime(select_minute_df['datetime'].dt.date)
     select_minute_df['cumsum_rad'] = select_minute_df.groupby('date')['rad'].cumsum()
+    select_minute_df['SVP'] = 0.61078 * np.exp(select_minute_df['temp'] / (select_minute_df['temp'] + 233.3) * 17.2694)
+    select_minute_df['VPD'] = select_minute_df['SVP'] * (1 - select_minute_df['hum'] / 100)
+
 
     daily_df['폭염일수'] = daily_df['폭염일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)
