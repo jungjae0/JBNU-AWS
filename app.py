@@ -136,6 +136,22 @@ def day_humid_line(df):
 
     return fig
 
+def day_rad_line(df):
+    df['cumsum_rad'] = df['rad'].cumsum()
+    fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['cumsum_rad'], name='hum')])
+    fig.update_layout(title_text='누적광량')
+    fig.update_xaxes(title_text='시간')
+    fig.update_yaxes(title_text='누적광량(W/m²)')
+
+    return fig
+def day_line(df, value, title):
+    fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df[value], name=value)])
+    fig.update_layout(title_text=f'{title}')
+    fig.update_xaxes(title_text='시간')
+    fig.update_yaxes(title_text=f'{title}')
+
+    return fig
+
 def day_temphumid_line(df):
     fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Scatter(x=df["datetime"], y=df['temp'], mode='lines', name='temp', line=dict(color='blue')))
@@ -144,15 +160,6 @@ def day_temphumid_line(df):
     fig.update_layout(yaxis2=dict(title='습도(%)', overlaying='y', side='right', showgrid=False))
     fig.update_xaxes(title_text='시간')
     fig.update_yaxes(range=[0, 100], tick0=0, dtick=10, secondary_y=True)
-
-    return fig
-
-def day_rad_line(df):
-    df['cumsum_rad'] = df['rad'].cumsum()
-    fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df['cumsum_rad'], name='hum')])
-    fig.update_layout(title_text='누적광량')
-    fig.update_xaxes(title_text='시간')
-    fig.update_yaxes(title_text='누적광량(W/m²)')
 
     return fig
 
@@ -240,9 +247,13 @@ def user_select_date(folder_path):
 
 def tab_vis_today(today_df):
     today_temphumid = day_temphumid_line(today_df)
-    today_temp = day_temp_line(today_df)
-    today_humid = day_humid_line(today_df)
-    today_rad = day_rad_line(today_df)
+    # today_temp = day_temp_line(today_df)
+    # today_humid = day_humid_line(today_df)
+    # today_rad = day_rad_line(today_df)
+
+    today_temp = day_line(today_df, 'temp', '온도(℃)')
+    today_humid = day_line(today_df, 'hum', '습도(%)')
+    today_rad = day_line(today_df, 'cumsum_rad', '누적광량(W/m²)')
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="today_chart_selection")
@@ -260,9 +271,13 @@ def tab_vis_today(today_df):
 
 def tab_vis_day(select_minute_df):
     day_temphumid = day_temphumid_line(select_minute_df)
-    day_temp = day_temp_line(select_minute_df)
-    day_humid = day_humid_line(select_minute_df)
-    day_rad = day_rad_line(select_minute_df)
+    # day_temp = day_temp_line(select_minute_df)
+    # day_humid = day_humid_line(select_minute_df)
+    # day_rad = day_rad_line(select_minute_df)
+
+    day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
+    day_humid = day_line(select_minute_df, 'hum', '습도(%)')
+    day_rad = day_line(select_minute_df, 'cumsum_rad', '누적광량(W/m²)')
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="day_chart_selection")
@@ -380,7 +395,8 @@ def ready_dataframe(folder_path):
 
     select_minute_df = pd.read_csv(os.path.join(folder_path, f"{select_date.strftime('%Y%m%d')}.csv"))
     select_minute_df['datetime'] = pd.to_datetime(select_minute_df['datetime'])
-
+    select_minute_df['date'] = pd.to_datetime(select_minute_df['datetime'].dt.date)
+    select_minute_df['cumsum_rad'] = select_minute_df.groupby('date')['rad'].cumsum()
 
     daily_df['폭염일수'] = daily_df['폭염일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)

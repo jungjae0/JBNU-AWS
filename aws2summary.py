@@ -49,6 +49,8 @@ def hour_dataframe(df):
 def get_dataframe(start_date_str, end_date_str, folder_path):
     date_list = get_date_list(start_date_str, end_date_str)
     df = raw_dataframe(folder_path, date_list)
+    df['SVP'] = 0.61078 * np.exp(df['temp'] / (df['temp'] + 233.3) * 17.2694)
+    df['VPD'] = df['SVP'] * (1 - df['hum'] / 100)
     minute_df = minute_dataframe(df)
     hour_df = hour_dataframe(df)
 
