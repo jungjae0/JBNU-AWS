@@ -245,6 +245,8 @@ def user_select_date(folder_path):
 
     return start_date, start_date_str, end_date, end_date_str, select_date, select_date_str
 
+
+
 def tab_vis_today(today_df):
     today_temphumid = day_temphumid_line(today_df)
     # today_temp = day_temp_line(today_df)
@@ -254,9 +256,11 @@ def tab_vis_today(today_df):
     today_temp = day_line(today_df, 'temp', '온도(℃)')
     today_humid = day_line(today_df, 'hum', '습도(%)')
     today_rad = day_line(today_df, 'cumsum_rad', '누적광량(W/m²)')
+    today_vpd = day_line(today_df, 'VPD', 'VPD')
+
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="today_chart_selection")
+    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량", "VPD"], key="today_chart_selection")
 
     selected_chart = st.plotly_chart(today_temphumid)
 
@@ -268,30 +272,33 @@ def tab_vis_today(today_df):
         selected_chart.plotly_chart(today_humid)
     elif chart_selection == "누적광량":
         selected_chart.plotly_chart(today_rad)
+    elif chart_selection == "VPD":
+        selected_chart.plotly_chart(today_vpd)
 
 def tab_vis_day(select_minute_df):
-    day_temphumid = day_temphumid_line(select_minute_df)
-    # day_temp = day_temp_line(select_minute_df)
-    # day_humid = day_humid_line(select_minute_df)
-    # day_rad = day_rad_line(select_minute_df)
-
-    day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
-    day_humid = day_line(select_minute_df, 'hum', '습도(%)')
-    day_rad = day_line(select_minute_df, 'cumsum_rad', '누적광량(W/m²)')
-
-    st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="day_chart_selection")
-
-    selected_chart = st.plotly_chart(day_temphumid)
-
-    if chart_selection == "온습도":
-        selected_chart.plotly_chart(day_temphumid)
-    elif chart_selection == "온도":
-        selected_chart.plotly_chart(day_temp)
-    elif chart_selection == "습도":
-        selected_chart.plotly_chart(day_humid)
-    elif chart_selection == "누적광량":
-        selected_chart.plotly_chart(day_rad)
+    tab_vis_today(select_minute_df)
+    # day_temphumid = day_temphumid_line(select_minute_df)
+    # # day_temp = day_temp_line(select_minute_df)
+    # # day_humid = day_humid_line(select_minute_df)
+    # # day_rad = day_rad_line(select_minute_df)
+    #
+    # day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
+    # day_humid = day_line(select_minute_df, 'hum', '습도(%)')
+    # day_rad = day_line(select_minute_df, 'cumsum_rad', '누적광량(W/m²)')
+    #
+    # st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    # chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="day_chart_selection")
+    #
+    # selected_chart = st.plotly_chart(day_temphumid)
+    #
+    # if chart_selection == "온습도":
+    #     selected_chart.plotly_chart(day_temphumid)
+    # elif chart_selection == "온도":
+    #     selected_chart.plotly_chart(day_temp)
+    # elif chart_selection == "습도":
+    #     selected_chart.plotly_chart(day_humid)
+    # elif chart_selection == "누적광량":
+    #     selected_chart.plotly_chart(day_rad)
 
 def tab_vis_daily(minute_df, daily_df, wd_category):
     week_temphumid = week_temphumid_line(minute_df)
@@ -347,21 +354,21 @@ def tab_table_hour(hour_df):
 def tab_table_minute(minute_df):
     number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key=4)
 
-    show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+    show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'VPD', 'bv']]
     show_minute_df = show_minute_df[show_minute_df['datetime'].dt.minute % number == 0]
 
     st.write(show_minute_df)
 
 def tab_table_day(select_minute_df):
     number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key=5)
-    show_select_minute_df = select_minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+    show_select_minute_df = select_minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'VPD', 'bv']]
     show_select_minute_df = show_select_minute_df[show_select_minute_df['datetime'].dt.minute % number == 0]
     st.write(show_select_minute_df)
 
 
 def tab_table_today(today_df):
     number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key='today_minute_number')
-    show_today_df = today_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
+    show_today_df = today_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'VPD', 'bv']]
     show_today_df = show_today_df[show_today_df['datetime'].dt.minute % number == 0]
     st.write(show_today_df)
 
