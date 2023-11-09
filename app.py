@@ -256,7 +256,7 @@ def tab_vis_today(today_df):
 
     today_temp = day_line(today_df, 'temp', '온도(℃)')
     today_humid = day_line(today_df, 'hum', '습도(%)')
-    today_rad = day_line(today_df, 'cumsum_rad', '누적광량(W/m²)')
+    today_rad = day_rad_line(today_df)
     today_vpd = day_line(today_df, 'VPD', 'VPD')
 
 
@@ -404,7 +404,6 @@ def ready_dataframe(folder_path):
     select_minute_df = pd.read_csv(os.path.join(folder_path, f"{select_date.strftime('%Y%m%d')}.csv"))
     select_minute_df['datetime'] = pd.to_datetime(select_minute_df['datetime'])
     select_minute_df['date'] = pd.to_datetime(select_minute_df['datetime'].dt.date)
-    select_minute_df['cumsum_rad'] = select_minute_df.groupby('date')['rad'].cumsum()
     select_minute_df['SVP'] = 0.61078 * np.exp(select_minute_df['temp'] / (select_minute_df['temp'] + 233.3) * 17.2694)
     select_minute_df['VPD'] = select_minute_df['SVP'] * (1 - select_minute_df['hum'] / 100)
 
