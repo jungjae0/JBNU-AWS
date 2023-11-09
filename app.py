@@ -273,7 +273,7 @@ def tab_vis_day(select_minute_df):
     day_temphumid = day_temphumid_line(select_minute_df)
     day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
     day_humid = day_line(select_minute_df, 'hum', '습도(%)')
-    day_rad = day_line(select_minute_df, 'cumsum_rad', '누적광량(W/m²)')
+    day_rad = day_rad_line(select_minute_df)
     day_vpd = day_line(select_minute_df, 'VPD', 'VPD')
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
