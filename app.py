@@ -146,6 +146,7 @@ def day_rad_line(df):
 
     return fig
 def day_line(df, value, title):
+
     fig = go.Figure(data=[go.Scatter(x=df["datetime"], y=df[value], name=value)])
     fig.update_layout(title_text=f'{title}')
     fig.update_xaxes(title_text='시간')
@@ -254,6 +255,9 @@ def tab_vis_today(today_df):
     # today_humid = day_humid_line(today_df)
     # today_rad = day_rad_line(today_df)
 
+
+    today_df['SVP'] = 0.61078 * np.exp(today_df['temp'] / (today_df['temp'] + 233.3) * 17.2694)
+    today_df['VPD'] = today_df['SVP'] * (1 - today_df['hum'] / 100)
     today_temp = day_line(today_df, 'temp', '온도(℃)')
     today_humid = day_line(today_df, 'hum', '습도(%)')
     today_rad = day_rad_line(today_df)
@@ -406,7 +410,6 @@ def ready_dataframe(folder_path):
     select_minute_df['date'] = pd.to_datetime(select_minute_df['datetime'].dt.date)
     select_minute_df['SVP'] = 0.61078 * np.exp(select_minute_df['temp'] / (select_minute_df['temp'] + 233.3) * 17.2694)
     select_minute_df['VPD'] = select_minute_df['SVP'] * (1 - select_minute_df['hum'] / 100)
-
 
     daily_df['폭염일수'] = daily_df['폭염일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)
