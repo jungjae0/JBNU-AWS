@@ -251,21 +251,12 @@ def user_select_date(folder_path):
 
 def tab_vis_today(today_df):
     today_temphumid = day_temphumid_line(today_df)
-    # today_temp = day_temp_line(today_df)
-    # today_humid = day_humid_line(today_df)
-    # today_rad = day_rad_line(today_df)
-
-
-    today_df['SVP'] = 0.61078 * np.exp(today_df['temp'] / (today_df['temp'] + 233.3) * 17.2694)
-    today_df['VPD'] = today_df['SVP'] * (1 - today_df['hum'] / 100)
     today_temp = day_line(today_df, 'temp', '온도(℃)')
     today_humid = day_line(today_df, 'hum', '습도(%)')
     today_rad = day_rad_line(today_df)
-    today_vpd = day_line(today_df, 'VPD', 'VPD')
-
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량", "VPD"], key="today_chart_selection")
+    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="today_chart_selection")
 
     selected_chart = st.plotly_chart(today_temphumid)
 
@@ -277,33 +268,34 @@ def tab_vis_today(today_df):
         selected_chart.plotly_chart(today_humid)
     elif chart_selection == "누적광량":
         selected_chart.plotly_chart(today_rad)
-    elif chart_selection == "VPD":
-        selected_chart.plotly_chart(today_vpd)
 
 def tab_vis_day(select_minute_df):
-    tab_vis_today(select_minute_df)
-    # day_temphumid = day_temphumid_line(select_minute_df)
-    # # day_temp = day_temp_line(select_minute_df)
-    # # day_humid = day_humid_line(select_minute_df)
-    # # day_rad = day_rad_line(select_minute_df)
-    #
-    # day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
-    # day_humid = day_line(select_minute_df, 'hum', '습도(%)')
-    # day_rad = day_line(select_minute_df, 'cumsum_rad', '누적광량(W/m²)')
-    #
-    # st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    # chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="day_chart_selection")
-    #
-    # selected_chart = st.plotly_chart(day_temphumid)
-    #
-    # if chart_selection == "온습도":
-    #     selected_chart.plotly_chart(day_temphumid)
-    # elif chart_selection == "온도":
-    #     selected_chart.plotly_chart(day_temp)
-    # elif chart_selection == "습도":
-    #     selected_chart.plotly_chart(day_humid)
-    # elif chart_selection == "누적광량":
-    #     selected_chart.plotly_chart(day_rad)
+    day_temphumid = day_temphumid_line(select_minute_df)
+    # day_temp = day_temp_line(select_minute_df)
+    # day_humid = day_humid_line(select_minute_df)
+    # day_rad = day_rad_line(select_minute_df)
+
+    day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
+    day_humid = day_line(select_minute_df, 'hum', '습도(%)')
+    day_rad = day_line(select_minute_df, 'cumsum_rad', '누적광량(W/m²)')
+    day_vpd = day_line(select_minute_df, 'VPD', 'VPD')
+
+    st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량", "VPD"], key="day_chart_selection")
+
+    selected_chart = st.plotly_chart(day_temphumid)
+
+    if chart_selection == "온습도":
+        selected_chart.plotly_chart(day_temphumid)
+    elif chart_selection == "온도":
+        selected_chart.plotly_chart(day_temp)
+    elif chart_selection == "습도":
+        selected_chart.plotly_chart(day_humid)
+    elif chart_selection == "누적광량":
+        selected_chart.plotly_chart(day_rad)
+
+    elif chart_selection == "VPD":
+        selected_chart.plotly_chart(day_vpd)
 
 def tab_vis_daily(minute_df, daily_df, wd_category):
     week_temphumid = week_temphumid_line(minute_df)
@@ -408,8 +400,6 @@ def ready_dataframe(folder_path):
     select_minute_df = pd.read_csv(os.path.join(folder_path, f"{select_date.strftime('%Y%m%d')}.csv"))
     select_minute_df['datetime'] = pd.to_datetime(select_minute_df['datetime'])
     select_minute_df['date'] = pd.to_datetime(select_minute_df['datetime'].dt.date)
-    select_minute_df['SVP'] = 0.61078 * np.exp(select_minute_df['temp'] / (select_minute_df['temp'] + 233.3) * 17.2694)
-    select_minute_df['VPD'] = select_minute_df['SVP'] * (1 - select_minute_df['hum'] / 100)
 
     daily_df['폭염일수'] = daily_df['폭염일수'].apply(lambda x: '-' if x == 0 else x)
     daily_df['강수일수'] = daily_df['강수일수'].apply(lambda x: '-' if x == 0 else x)
