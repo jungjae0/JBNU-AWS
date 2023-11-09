@@ -274,10 +274,9 @@ def tab_vis_day(select_minute_df):
     day_temp = day_line(select_minute_df, 'temp', '온도(℃)')
     day_humid = day_line(select_minute_df, 'hum', '습도(%)')
     day_rad = day_rad_line(select_minute_df)
-    day_vpd = day_line(select_minute_df, 'VPD', 'VPD')
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량", "VPD"], key="day_chart_selection")
+    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "누적광량"], key="day_chart_selection")
 
     selected_chart = st.plotly_chart(day_temphumid)
 
@@ -289,8 +288,7 @@ def tab_vis_day(select_minute_df):
         selected_chart.plotly_chart(day_humid)
     elif chart_selection == "누적광량":
         selected_chart.plotly_chart(day_rad)
-    elif chart_selection == "VPD":
-        selected_chart.plotly_chart(day_vpd)
+
 
 def tab_vis_daily(minute_df, daily_df, wd_category):
     week_temphumid = week_temphumid_line(minute_df)
