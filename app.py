@@ -344,14 +344,14 @@ def tab_table_hour(hour_df):
 def tab_table_minute(minute_df):
     number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key=4)
 
-    show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'VPD', 'bv']]
+    show_minute_df = minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
     show_minute_df = show_minute_df[show_minute_df['datetime'].dt.minute % number == 0]
 
     st.write(show_minute_df)
 
 def tab_table_day(select_minute_df):
     number = st.number_input("분 간격 입력", min_value=0, max_value=55, value=10, step=5, key=5)
-    show_select_minute_df = select_minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'VPD', 'bv']]
+    show_select_minute_df = select_minute_df[['datetime', 'temp', 'hum', 'rad', 'wd', 'ws', 'rain', 'maxws', 'bv']]
     show_select_minute_df = show_select_minute_df[show_select_minute_df['datetime'].dt.minute % number == 0]
     st.write(show_select_minute_df)
 
