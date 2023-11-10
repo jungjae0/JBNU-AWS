@@ -1,8 +1,45 @@
 import os
+import pytz
 import numpy as np
 import pandas as pd
-import plotly.express as px
+import urllib.request
 from datetime import datetime, timedelta
+
+seoul = pytz.timezone('Asia/Seoul')
+
+def preprocess_df(df):
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['date'] = pd.to_datetime(df['datetime'].dt.date)
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
+    df['day'] = df['date'].dt.day
+
+    df['cumsum_rad'] = df['rad'].cumsum()
+    df['SVP'] = 0.61078 * np.exp(df['temp'] / (df['temp'] + 233.3) * 17.2694)
+    df['VPD'] = df['SVP'] * (1 - df['hum'] / 100)
+
+    return df
+
+
+def get_today_aws():
+    date = datetime.now(seoul)
+    Year = date.year
+    Mon = f"{date.month:02d}"
+    Day = f"{date.day:02d}"
+    Site = 85
+    Dev = 1
+
+    aws_url =f'http://203.239.47.148:8080/dspnet.aspx?Site={Site}&Dev={Dev}&Year={Year}&Mon={Mon}&Day={Day}'
+    data = urllib.request.urlopen(aws_url)
+
+    df = pd.read_csv(data, header=None)
+
+    df.columns = ['datetime', 'temp', 'hum', 'X', 'X', 'X', 'rad', 'wd', 'X', 'X', 'X', 'X', 'X', 'ws', 'rain', 'maxws', 'bv', 'X']
+    drop_cols = [col for col in df.columns if 'X' in col]
+    df = df.drop(columns=drop_cols)
+    df = preprocess_df(df)
+    return df
+
 
 def get_date_list(start_date_str, end_date_str):
     start_date = datetime.strptime(start_date_str, "%Y%m%d")
@@ -17,44 +54,41 @@ def get_date_list(start_date_str, end_date_str):
     return date_list
 
 
-def raw_dataframe(folder_path, date_list):
-    df_list = [pd.read_csv(os.path.join(folder_path, date + '.csv')) for date in date_list]
+def raw_dataframe(folder_path, start_date_str, end_date_str):
+    date_list = get_date_list(start_date_str, end_date_str)
+    # df_list = [pd.read_csv(os.path.join(folder_path, date + '.csv')) for date in date_list]
+
+    df_list = []
+    for date in date_list:
+
+        each_df = pd.read_csv(os.path.join(folder_path, date + '.csv'))
+        each_df = preprocess_df(each_df)
+        df_list.append(each_df)
+
     df = pd.concat(df_list)
 
     return df
 
-
-def minute_dataframe(df):
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    df['date'] = pd.to_datetime(df['datetime'].dt.date)
-    df['year'] = df['date'].dt.year
-    df['month'] = df['date'].dt.month
-    df['day'] = df['date'].dt.day
-    return df
+# def select_dataframe(folder_path, select_date):
+#     select_df = pd.read_csv(os.path.join(folder_path, f"{select_date.strftime('%Y%m%d')}.csv"))
+#     select_df = preprocess_df(select_df)
+#     return select_df
 
 
-def hour_dataframe(df):
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    df['date'] = pd.to_datetime(df['datetime'].dt.date)
-    df['hour'] = df['datetime'].dt.hour
-
-    df = df.groupby(['date', 'hour']).mean().reset_index()
-    df['year'] = df['date'].dt.year
-    df['month'] = df['date'].dt.month
-    df['day'] = df['date'].dt.day
-    df['datetime'] = df['date'] + pd.to_timedelta(df['hour'].astype(str) + ':00:00')
-    return df
-
-
-def get_dataframe(start_date_str, end_date_str, folder_path):
-    date_list = get_date_list(start_date_str, end_date_str)
-    df = raw_dataframe(folder_path, date_list)
-    df['SVP'] = 0.61078 * np.exp(df['temp'] / (df['temp'] + 233.3) * 17.2694)
-    df['VPD'] = df['SVP'] * (1 - df['hum'] / 100)
-    minute_df = minute_dataframe(df)
-    hour_df = hour_dataframe(df)
-
-    return minute_df, hour_df
+# def hour_dataframe(df):
+#     df['hour'] = df['datetime'].dt.hour
+#     df = df.groupby(['date', 'hour']).mean().reset_index()
+#     df['datetime'] = df['date'] + pd.to_timedelta(df['hour'].astype(str) + ':00:00')
+#     return df
+#
+#
+# def get_dataframe(start_date_str, end_date_str, folder_path):
+#     date_list = get_date_list(start_date_str, end_date_str)
+#     df = raw_dataframe(folder_path, date_list)
+#
+#     hour_df = hour_dataframe(df)
+#
+#     return df, hour_df
 
 
 def rain_rank(x):
@@ -76,10 +110,11 @@ def wd_cate(x):
     return directions[index]
 
 
-def daily_data(minute_df, hour_df):
-    hour_df, minute_df = hour_df.copy(), minute_df.copy()
+def daily_data(df):
+    hour_df = df[df['datetime'].dt.minute == 0]
+    # hour_df, df = hour_df.copy(), df.copy()
     # 1. 일별 통계
-    summary = minute_df.groupby('date').agg(tavg=('temp', 'mean'),
+    summary = df.groupby('date').agg(tavg=('temp', 'mean'),
                                             tmax=('temp', 'max'),
                                             tmin=('temp', 'min'),
                                             rain=('rain', 'sum'),
@@ -109,7 +144,7 @@ def daily_data(minute_df, hour_df):
     # 4-1. 체감온도 -> 여름철(5~9월)과 겨울철(10~익년 4월)
     # 4-1-1. 여름철 체감온도: 일 최고 체감온도
     # 4-1-2. 겨울철 체감온도: 일 최저 체감온도 -> 기온 10℃ 이하, 풍속 1.3m/s 이상
-    to_hotcold = minute_df
+    to_hotcold = df
     to_hotcold['Tw'] = to_hotcold['temp'] * np.arctan((0.151977 * ((to_hotcold['hum'] + 8.313659) ** 0.5))) + \
                        np.arctan(to_hotcold['temp'] + to_hotcold['hum']) - np.arctan(to_hotcold['hum'] - 1.67633) + \
                        0.00391838 * (to_hotcold['hum'] ** 1.5) * np.arctan(0.023101 * to_hotcold['hum']) - 4.686035
@@ -125,7 +160,7 @@ def daily_data(minute_df, hour_df):
     hot_cold = hot_cold[['date', 'ts']]
 
     # 4-2. 실효습도: 상대습도에 경과 시간에 따른 가중치 주어 건조를 나타내는 지수
-    hd = minute_df[['date', 'hum']]
+    hd = df[['date', 'hum']]
     hd = hd.groupby('date')['hum'].mean().reset_index()
     r = 0.7
     for i in range(0, 5):
