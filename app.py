@@ -183,7 +183,7 @@ def choice_today():
         show_table(today_df, 'today')
 
 
-def choice_past():
+def choice_past(folder_path):
     df, daily_df, wd_cate_df, dates_df, select_df = ready_dataframe(folder_path)
 
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
@@ -234,7 +234,7 @@ def main():
     if choice == 'Today':
         choice_today()
     elif choice == 'Past':
-        choice_past()
+        choice_past(folder_path)
 
 
 if __name__ == '__main__':
