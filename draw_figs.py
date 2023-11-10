@@ -44,7 +44,7 @@ def draw_mix_line(df, title, kind):
 def draw_temp_rain(df):
     fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
 
-    fig.add_trace(go.Bar(x=df["날짜"], y=df["강수량"], name='강수량', yaxis='y', marker=dict(color='blue')))
+    fig.add_trace(go.Bar(x=df["날짜"], y=df["강수량"], name='강수량', yaxis='y', marker=dict(color='skyblue')))
 
     fig.add_trace(go.Scatter(x=df["날짜"], y=df['평균기온'], name='평균기온', line=dict(color='green')))
     fig.add_trace(go.Scatter(x=df["날짜"], y=df['최저기온'], name='최저기온', line=dict(color='blue')))
