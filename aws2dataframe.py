@@ -15,6 +15,7 @@ def preprocess_df(df):
     df['day'] = df['date'].dt.day
 
     df['cumsum_rad'] = df['rad'].cumsum()
+    df['cumsum_rad'] = df['cumsum_rad'] / 100000
     df['SVP'] = 0.61078 * np.exp(df['temp'] / (df['temp'] + 233.3) * 17.2694)
     df['VPD'] = df['SVP'] * (1 - df['hum'] / 100)
 
@@ -69,10 +70,10 @@ def raw_dataframe(folder_path, start_date_str, end_date_str):
 
     return df
 
-# def select_dataframe(folder_path, select_date):
-#     select_df = pd.read_csv(os.path.join(folder_path, f"{select_date.strftime('%Y%m%d')}.csv"))
-#     select_df = preprocess_df(select_df)
-#     return select_df
+def select_dataframe(folder_path, select_date):
+    select_df = pd.read_csv(os.path.join(folder_path, f"{select_date}.csv"))
+    select_df = preprocess_df(select_df)
+    return select_df
 
 
 # def hour_dataframe(df):

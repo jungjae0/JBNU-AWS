@@ -38,10 +38,10 @@ def show_select_fig(df, kind):
     fig_temp = draw_figs.draw_line(df, 'temp', '온도(℃)', kind)
     fig_humid = draw_figs.draw_line(df, 'hum', '습도(%)', kind)
     fig_VPD = draw_figs.draw_line(df, 'VPD', 'VPD(kPa)', kind)
-    fig_cumsumrad = draw_figs.draw_line(df, 'cumsum_rad', '누적광량(W/m²)', kind)
+    fig_cumsumrad = draw_figs.draw_line(df, 'cumsum_rad', '누적일사(MJ/m²)', kind)
 
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "VPD", "누적광량"], key=f"{kind}_chart_selection")
+    chart_selection = st.radio("Select a chart:", ["온습도", "온도", "습도", "VPD", "누적일사"], key=f"{kind}_chart_selection")
 
     # selected_chart = st.plotly_chart(fig_temphumid, use_container_width = True)
     #
@@ -64,7 +64,7 @@ def show_select_fig(df, kind):
         show_fig(fig_humid)
     elif chart_selection == "VPD":
         show_fig(fig_VPD)
-    elif chart_selection == "누적광량":
+    elif chart_selection == "누적일사":
         show_fig(fig_cumsumrad)
 
 def min_max_date(folder_path):
@@ -94,7 +94,7 @@ def show_select_date(folder_path):
         end_date = st.date_input("Select an end date", min_value=min_date, max_value=max_date2, value=max_date2, key=2)
         end_date_str = end_date.strftime('%Y%m%d')
 
-    select_date = st.date_input("Select a date", min_value=start_date, max_value=end_date, value=end_date,
+    select_date = st.date_input("Select a date", min_value=min_date, max_value=max_date2, value=max_date2,
                                 key=3)
     select_date_str = select_date.strftime('%Y%m%d')
 
@@ -157,7 +157,7 @@ def ready_dataframe(folder_path):
     start_date, start_date_str, end_date, end_date_str, select_date, select_date_str = show_select_date(folder_path)
 
     df = aws2dataframe.raw_dataframe(folder_path, start_date_str, end_date_str)
-    select_df = df[df['datetime'].dt.date == select_date]
+    select_df = aws2dataframe.select_dataframe(folder_path, start_date_str)
 
     daily_df, wd_cate_df = aws2dataframe.daily_data(df)
     dates_df = aws2dataframe.weekly_date(daily_df)
