@@ -52,6 +52,8 @@ def today_data():
 def past_data(sd, ed):
     df = pd.concat([pd.read_csv(os.path.join(aws_dir, file)) for file in os.listdir(aws_dir) if file.endswith('.csv') and pd.to_datetime(sd) <= pd.to_datetime(file.replace('.csv', ''), format='%Y%m%d') <= pd.to_datetime(ed)])
     df = preprocess_df(df, 'past')
+    df = df.sort_values(by='datetime')
+
 
     return df
 
@@ -60,5 +62,6 @@ def summary_data(sd, ed):
     df['date'] = pd.to_datetime(df['date'], format='%Y%m%d')
     df = df[(df['date'] >= pd.to_datetime(sd)) & (df['date'] <= pd.to_datetime(ed))]
     df['date'] = df['date'].dt.date
+    df = df.sort_values(by='date')
 
     return df
