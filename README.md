@@ -1,6 +1,6 @@
 ## 전북대학교 학습도서관 AWS 기상대 시각화 및 데이터 다운로드
 
-**link > https://jbnuaws.streamlit.app/**
+**link > https://jbnu-aws.streamlit.app/**
 
 <details>
 <summary>Streamlit APP</summary>

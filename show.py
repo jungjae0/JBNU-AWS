@@ -47,7 +47,7 @@ def table(df, kind=None):
         st.write(explain_df)
 
 def select_sd_ed(key):
-    dates = [int(file.replace('.csv', ''))for file in os.listdir(aws_dir)]
+    dates = [int(file.split('.')[0]) for file in os.listdir(aws_dir)]
     col1, col2 = st.columns(2)
     min_date = datetime(2023, 10, 1)
     max_date2 = datetime.strptime(str(max(dates)), '%Y%m%d')
